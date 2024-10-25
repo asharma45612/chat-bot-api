@@ -114,22 +114,43 @@ router.get('/aggregate_feedback', async function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   const { category, designation, company, experience } = req.query;
   
-  console.log(datasetForFeedback[category])
+  const categoryMap = {
+    'Instructor Quality': 'Instructor Quality',
+    'Time Commitment and Difficulty Level': 'Time Commitment and Difficulty Level',
+    'Career growth': 'Career Impact and Value',
+    'Value for money': 'Return on Investment (ROI)',
+    'Networking & Community': 'Alumni Network and Community'
+  }
+
+  const csvCategory = categoryMap[category.trim()]
+
+  console.log(csvCategory)
 
   const prompt = `
-    Using the feedback dataset for category ${category}:
-    ${JSON.stringify(datasetForFeedback[category])}
+    Using the feedback dataset for category ${csvCategory}:
+    ${JSON.stringify(datasetForFeedback[csvCategory])}
 
-    Please provide the aggregated data from above dataset for category ${category} that corresponds to the designation ${designation}, company ${company}, and experience ${experience} in the following format:
+    Please provide the aggregated data from above dataset for category ${csvCategory} that corresponds to the designation ${designation}, company ${company}, and experience ${experience} in the following format:
      
-    show Average Rating (in bold): (rounded to one decimal)
-    Feedback: list items without quoutes in third person (display only the top 5 feedback entries from the dataset)
+    return average rating and aggregate feedback(in third person 5 list items) in json format
   `;
 
+
   const response = await postToOpenAI(prompt);
-  console.log(response)
+  const jsonResponse = JSON.parse(response.data.choices[0].text)
+
+  const markdown = `
+Average Rating: **${jsonResponse['Average Rating']}**
+
+Feedback:
+${jsonResponse['Aggregate Feedback'].map((feedback, index) => `- ${feedback}`).join('\n')}
+  `
+
+  console.log(markdown)
+  
+  
   if (response) {
-    res.send(response.data.choices[0].text);
+    res.send(markdown);
   } else {
     res.send('')
   }
