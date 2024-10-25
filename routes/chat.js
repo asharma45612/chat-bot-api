@@ -121,10 +121,9 @@ router.get('/aggregate_feedback', async function (req, res, next) {
     ${JSON.stringify(datasetForFeedback[category])}
 
     Please provide the aggregated data from above dataset for category ${category} that corresponds to the designation ${designation}, company ${company}, and experience ${experience} in the following format:
-
-    Average Rating: (rounded to one decimal) (add a new line after this)
-    Batches Considered: (add a new line after this)
-    Feedback: list without quoutes (display only the top 5 feedback entries from the dataset)
+     
+    show Average Rating (in bold): (rounded to one decimal)
+    Feedback: list items without quoutes in third person (display only the top 5 feedback entries from the dataset)
   `;
 
   const response = await postToOpenAI(prompt);
