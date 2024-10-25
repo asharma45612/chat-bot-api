@@ -120,13 +120,11 @@ router.get('/aggregate_feedback', async function (req, res, next) {
     Using the feedback dataset for category ${category}:
     ${JSON.stringify(datasetForFeedback[category])}
 
-    Please provide the aggregated data from above dataset for category ${category} that corresponds to the designation ${designation}, company ${company}, and experience ${experience} in the following markdown format:
+    Please provide the aggregated data from above dataset for category ${category} that corresponds to the designation ${designation}, company ${company}, and experience ${experience} in the following format:
 
-    Average Rating: (rounded to one decimal)
-    Batches Considered:
-    Feedback: (display only the top 5 feedback entries from the dataset)
-    item1
-    item2
+    Average Rating: (rounded to one decimal) (add a new line after this)
+    Batches Considered: (add a new line after this)
+    Feedback: list without quoutes (display only the top 5 feedback entries from the dataset)
   `;
 
   const response = await postToOpenAI(prompt);
@@ -142,6 +140,8 @@ router.get('/aggregate_feedback', async function (req, res, next) {
 router.get('/past_learners_profile_percentage', async function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
 
+  
+
   const designationCounts = datasetForMatch.reduce((acc, profile) => {
     if (!acc[profile.Designation]) {
       acc[profile.Designation] = 0;
@@ -151,10 +151,10 @@ router.get('/past_learners_profile_percentage', async function (req, res, next) 
   }, {});
 
   const totalProfiles = datasetForMatch.length;
-  const profilePercentage = Object.keys(designationCounts).reduce((acc, Designation) => {
-    acc[Designation] = Math.round((designationCounts[Designation] / totalProfiles) * 100);
-    return acc;
-  }, {});
+  const profilePercentage = Object.keys(designationCounts).map(Designation => ({
+    name: Designation,
+    value: Math.round((designationCounts[Designation] / totalProfiles) * 100)
+  }));
   
   res.json(profilePercentage);
 });
